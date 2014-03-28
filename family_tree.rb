@@ -18,9 +18,12 @@ def menu
     puts 'Press s to see who someone is married to.'
     puts 'Press p to add parents to a person.'
     puts "Press w to see who someone's parents are."
+    puts "Press b to see who someone's siblings are."
     puts "Press c to see who someone's children are."
     puts "Press g to see who someone's grandparents are."
     puts "Press gc to see who someone's grandchildren are."
+    puts "Press u to see who someone's aunts and uncles are."
+    puts "Press cu to see who someone's cousins are."
     puts 'Press e to exit.'
     choice = gets.chomp
 
@@ -28,9 +31,7 @@ def menu
     when 'a'
       add_person
     when 'l'
-      list
-      puts "\nPress enter to return to the main menu."
-      gets
+      list_relatives
     when 'm'
       add_marriage
     when 's'
@@ -39,12 +40,18 @@ def menu
       add_parents
     when 'w'
       list_parents
+    when 'b'
+      list_siblings
     when 'c'
       list_children
     when 'g'
       list_grandparents
     when 'gc'
       list_grandchildren
+    when 'u'
+      list_aunts_uncles
+    when 'cu'
+      list_cousins
     when 'e'
       exit
     end
@@ -52,9 +59,11 @@ def menu
 end
 
 def add_person
+  system('clear')
+  puts "***** Add Person *****\n"
   puts 'What is the name of the family member?'
   name = gets.chomp
-  if Person.find(name).nil?
+  if Person.find_by(:name => name).nil?
     Person.create(:name => name)
     puts name + " was added to the family tree.\n\n"
     puts "Press enter to return to the main menu."
@@ -67,6 +76,8 @@ def add_person
 end
 
 def add_marriage
+  system('clear')
+  puts "***** Add Marraige *****\n"
   list
   puts 'What is the number of the first spouse?'
   spouse1 = Person.find(gets.chomp)
@@ -79,6 +90,8 @@ def add_marriage
 end
 
 def add_parents
+  system('clear')
+  puts "***** Add Parents *****\n"
   list
   puts "Enter the number of the person to add parents to:"
   person = Person.find(gets.chomp)
@@ -87,12 +100,12 @@ def add_parents
     parent1 = Person.find(gets.chomp)
     puts "Enter the number of the second parent: (Enter nothing if only one parent is known)"
     parent2 = Person.find(gets.chomp)
-    parents = Parent.create(:parent1_id => parent1.id)
-    if parent2 != nil
-      parents.update(:parent2_id => parent2.id)
-      puts "#{parent1.name} and #{parent2.name} added as #{person.name}'s parents."
-    else
+    if parent2.nil?
+      parents = ParentPair.make_parents(parent1.id, nil)
       puts "#{parent1.name} added as #{person.name}'s parent."
+    else
+      parents = ParentPair.make_parents(parent1.id, parent2.id)
+      puts "#{parent1.name} and #{parent2.name} added as #{person.name}'s parents."
     end
     person.update(:parent_id => parents.id)
     puts "\nPress enter to return to the main menu."
@@ -112,7 +125,17 @@ def list
   end
 end
 
+def list_relatives
+  system('clear')
+  puts "***** Relatives *****\n\n"
+  list
+  puts "\nPress enter to return to the main menu."
+  gets
+end
+
 def show_marriage
+  system('clear')
+  puts "***** Show Marraige *****\n"
   list
   puts "Enter the number of the relative and I'll show you who they're married to."
   person = Person.find(gets.chomp)
@@ -123,6 +146,8 @@ def show_marriage
 end
 
 def list_parents
+  system('clear')
+  puts "***** List Parents *****\n"
   list
   puts "Enter the number of the relative and I'll show you who their parent(s) are."
   person = Person.find(gets.chomp)
@@ -137,6 +162,8 @@ def list_parents
 end
 
 def list_children
+  system('clear')
+  puts "***** List Children *****\n"
   list
   puts "Enter the number of the relative and I'll show you who their children are."
   person = Person.find(gets.chomp)
@@ -150,7 +177,25 @@ def list_children
   gets
 end
 
+def list_siblings
+  system('clear')
+  puts "***** List Siblings *****\n"
+  list
+  puts "Enter the number of the relative to see who their siblings are."
+  person = Person.find(gets.chomp)
+  siblings = person.get_siblings
+  if siblings != []
+    siblings.each { |sibling| puts "#{sibling.name} is #{person.name}'s sibling."}
+  else
+    puts "#{person.name} has no children in our system. Please enter them if you would like to see them."
+  end
+  puts "\nPress enter to return to the main menu."
+  gets
+end
+
 def list_grandparents
+  system('clear')
+  puts "***** List Grandparents *****\n"
   list
   puts "Enter the number of the relative and I'll show you who their grandparent(s) are."
   person = Person.find(gets.chomp)
@@ -165,6 +210,8 @@ def list_grandparents
 end
 
 def list_grandchildren
+  system('clear')
+  puts "***** List Grandchildren *****\n"
   list
   puts "Enter the number of the relative and I'll show you who their grandchildren are."
   person = Person.find(gets.chomp)
@@ -178,6 +225,38 @@ def list_grandchildren
   gets
 end
 
+def list_aunts_uncles
+  system('clear')
+  puts "***** List Aunts and Uncles *****\n"
+  list
+  puts "Enter the number of the relative and I'll show you who their aunts and uncles are."
+  person = Person.find(gets.chomp)
+  aunts_uncles = person.get_aunts_uncles
+  if aunts_uncles == []
+    puts "\n#{person.name} has no aunts or uncles in our system. If they should, enter those people to make them viewable."
+  else
+    puts ""
+    aunts_uncles.each { |aunt_uncle| puts "#{aunt_uncle.name} is #{person.name}'s aunt/uncle." }
+  end
+  puts "\nPress enter to return to the main menu."
+  gets
+end
 
+def list_cousins
+  system('clear')
+  puts "***** List Cousins *****\n"
+  list
+  puts "Enter the number of the relative and I'll show you who their cousins are."
+  person = Person.find(gets.chomp)
+  cousins = person.get_cousins
+  if cousins == []
+    puts "\n#{person.name} has no cousins in our system. If they should, enter those people to make them viewable."
+  else
+    puts ""
+    cousins.each { |cousin| puts "#{cousin.name} is #{person.name}'s cousin." }
+  end
+  puts "\nPress enter to return to the main menu."
+  gets
+end
 
 menu
