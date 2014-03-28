@@ -1,4 +1,4 @@
-class Parent<ActiveRecord::Base
+class Parent < ActiveRecord::Base
   validates :parent1_id, :presence => true
 
   def get_parents
