@@ -1,6 +1,6 @@
 class Person < ActiveRecord::Base
-  # has_many :people through: :ex_spouses
   has_one :parent_pair
+  has_many :exspouses
   validates :name, :presence => true
 
   after_save :make_marriage_reciprocal
@@ -90,11 +90,20 @@ class Person < ActiveRecord::Base
     grandchildren
   end
 
+  def end_marriage
+    self.exspouses.create(:person_id => id, :ex_spouse_id => spouse_id)
+    spouse.exspouses.create(:person_id => spouse_id, :ex_spouse_id => id)
+    spouse.update(:spouse_id => nil)
+    self.update(:spouse_id => nil)
+  end
+
 private
 
   def make_marriage_reciprocal
     if spouse_id_changed?
-      spouse.update(:spouse_id => id)
+      if !spouse_id.nil?
+        spouse.update(:spouse_id => id)
+      end
     end
   end
 end

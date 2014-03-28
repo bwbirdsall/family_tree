@@ -24,7 +24,9 @@ def menu
     puts "Press gc to see who someone's grandchildren are."
     puts "Press u to see who someone's aunts and uncles are."
     puts "Press cu to see who someone's cousins are."
-    puts 'Press e to exit.'
+    puts "Press e to end a marriage."
+    puts "Press x to list a person's ex-spouses."
+    puts "Enter 'exit' to exit."
     choice = gets.chomp
 
     case choice
@@ -53,6 +55,10 @@ def menu
     when 'cu'
       list_cousins
     when 'e'
+      end_marriage
+    when 'x'
+      list_exes
+    when 'exit'
       exit
     end
   end
@@ -77,7 +83,7 @@ end
 
 def add_marriage
   system('clear')
-  puts "***** Add Marraige *****\n"
+  puts "***** Add Marriage *****\n"
   list
   puts 'What is the number of the first spouse?'
   spouse1 = Person.find(gets.chomp)
@@ -139,8 +145,12 @@ def show_marriage
   list
   puts "Enter the number of the relative and I'll show you who they're married to."
   person = Person.find(gets.chomp)
-  spouse = Person.find(person.spouse_id)
-  puts person.name + " is married to " + spouse.name + "."
+  if !person.spouse.nil?
+    spouse = Person.find(person.spouse_id)
+    puts person.name + " is married to " + spouse.name + "."
+  else
+    puts person.name + " is not currently married."
+  end
   puts "\nPress enter to return to the main menu."
   gets
 end
@@ -255,6 +265,31 @@ def list_cousins
     puts ""
     cousins.each { |cousin| puts "#{cousin.name} is #{person.name}'s cousin." }
   end
+  puts "\nPress enter to return to the main menu."
+  gets
+end
+
+def end_marriage
+  system('clear')
+  puts "******* End Marriage ******\n\n"
+  list
+  puts "Enter which person's marriage has come to a tragic end, whether or not it is for the best."
+  person = Person.find(gets.chomp)
+  spouse = person.spouse
+  person.end_marriage
+  puts "\nThe marriage of #{person.name} and #{spouse.name} has been recoded as over."
+  puts "Press enter to return to the main menu."
+  gets
+end
+
+def list_exes
+  system('clear')
+  puts "******* List Ex-Spouses ******\n\n"
+  list
+  puts "Enter which person's ex-spouses you would like to see."
+  person = Person.find(gets.chomp)
+  puts
+  person.exspouses.each { |ex| puts person.name + " was once married to " + Person.find(ex.ex_spouse_id).name }
   puts "\nPress enter to return to the main menu."
   gets
 end

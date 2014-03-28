@@ -8,5 +8,5 @@ Future features:
 
 * Tracking children (DONE)
 * Reporting parents (DONE)
-* Reporting siblings, cousins, uncles/aunts, etc.
-* Tracking divorces
+* Reporting siblings, cousins, uncles/aunts, etc. (DONE)
+* Tracking divorces (DONE)

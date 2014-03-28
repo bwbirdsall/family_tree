@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Person do
   it { should validate_presence_of :name }
+  it { should have_many :exspouses }
 
   context '#spouse' do
     it 'returns the person with their spouse_id' do
@@ -144,4 +145,26 @@ describe Person do
       steve.get_cousins.should eq [javier]
     end
   end
+
+  describe '#end_marriage' do
+    it 'ends the current marriage for the person' do
+      steve = Person.create(:name => 'Steve')
+      esmeralda = Person.create(:name => 'Esmeralda')
+      steve.update(:spouse_id => esmeralda.id)
+      steve.end_marriage
+      esmeralda.reload
+      esmeralda.spouse_id.should eq nil
+    end
+
+    it 'person has an array of expouses' do
+      steve = Person.create(:name => 'Steve')
+      esmeralda = Person.create(:name => 'Esmeralda')
+      steve.update(:spouse_id => esmeralda.id)
+      steve.end_marriage
+      esmeralda.reload
+      esmeralda.exspouses.first.ex_spouse_id.should eq steve.id
+
+    end
+  end
+
 end
